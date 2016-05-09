@@ -25,13 +25,6 @@
         <url>https://stormpath.com</url>
     </organization>
 
-    <scm>
-        <connection>scm:git:git@bitbucket.org:stormpath/samza-spring-boot-starter.git</connection>
-        <developerConnection>scm:git:git@bitbucket.org:stormpath/samza-spring-boot-starter.git</developerConnection>
-        <url>git@bitbucket.org:stormpath/samza-spring-boot-starter.git</url>
-        <tag>HEAD</tag>
-    </scm>
-
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -39,6 +32,17 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+
+    <scm>
+        <connection>scm:git:git@github.com:stormpath/samza-spring-boot-starter.git</connection>
+        <developerConnection>scm:git:git@github.com:stormpath/samza-spring-boot-starter.git</developerConnection>
+        <url>git@github.com:stormpath/samza-spring-boot-starter.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    <issueManagement>
+        <system>GitHub</system>
+        <url>https://github.com/stormpath/samza-spring-boot-starter/issues</url>
+    </issueManagement>
 
     <properties>
         <curator.version>2.10.0</curator.version>
