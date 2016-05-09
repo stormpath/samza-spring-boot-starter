@@ -1,12 +1,11 @@
 package com.stormpath.spring.boot.samza.curator;
 
 import com.stormpath.curator.framework.recipes.nodes.SequentialGroupMember;
-import com.stormpath.spring.boot.samza.SamzaAutoConfiguration;
 import org.apache.curator.framework.CuratorFramework;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -15,7 +14,7 @@ import org.springframework.util.Assert;
 
 @Configuration
 @ConditionalOnProperty(name = {"samza.enabled", "spring.cloud.zookeeper.enabled", "samza.zookeeper.enabled"}, matchIfMissing = true)
-@AutoConfigureAfter(SamzaAutoConfiguration.class)
+@AutoConfigureOrder(1)
 public class CuratorSamzaAutoConfiguration {
 
     private static final byte[] EMPTY_PAYLOAD = new byte[0];
@@ -24,34 +23,43 @@ public class CuratorSamzaAutoConfiguration {
     @Autowired
     private CuratorFramework curator; //should be pulled in by configuring the spring-cloud-zookeeper-core artifact
 
-    @SuppressWarnings("SpringJavaAutowiringInspection")
-    @Autowired
-    @Qualifier("samzaJobName")
-    private String samzaJobName; //defined in SamzaAutoConfiguration
+    @Value("#{ @environment['samza.job.name'] ?: (@environment['spring.application.name'] ?: null) }")
+    private String samzaJobName;
 
-    @Value("#{ @environment['samza.zookeeper.container.membershipPath.prefix'] ?: (@environment['samza.zookeper.jobs.namespace'] ?: '/samza/jobs') }")
+    @Value("#{ @environment['samza.zookeeper.containers.namespace.prefix'] ?: (@environment['samza.zookeper.jobs.namespace'] ?: '/samza/jobs') }")
     private String samzaContainerMembershipPathPrefix;
 
-    @Value("#{ @environment['samza.zookeeper.container.membershipPath.suffix'] ?: '/containers' }")
+    @Value("#{ @environment['samza.zookeeper.containers.namespace.suffix'] ?: '/containers' }")
     private String samzaContainerMembershipPathSuffix;
 
     @Bean
     @ConditionalOnMissingBean(name = "samzaContainerMembershipPath")
     public String samzaContainerMembershipPath() {
-        Assert.hasText(samzaJobName, "samzaJobName bean (a String) has not been defined.");
+        Assert.hasText(samzaJobName, "samza.job.name or spring.application.name must be defined.");
         Assert.hasText(samzaContainerMembershipPathPrefix,
-            "samza.zookeeper.container.membershipPath.prefix cannot be a null or empty string.");
+            "samza.zookeeper.containers.namespace.prefix cannot be a null or empty string.");
         Assert.hasText(samzaContainerMembershipPathSuffix,
-            "samza.zookeeper.container.membershipPath.suffix cannot be a null or empty string.");
+            "samza.zookeeper.containers.namespace.suffix cannot be a null or empty string.");
 
-        return samzaContainerMembershipPathPrefix + samzaJobName + samzaContainerMembershipPathSuffix;
+        String val = samzaContainerMembershipPathPrefix;
+        if (!val.endsWith("/")) {
+            val += "/";
+        }
+        val += samzaJobName;
+        if (!samzaContainerMembershipPathSuffix.startsWith("/")) {
+            val += "/";
+        }
+        val += samzaContainerMembershipPathSuffix;
+
+        return val;
     }
 
     @Bean(initMethod = "start", destroyMethod = "close")
     @ConditionalOnMissingBean(name = "samzaContainerGroupMember")
     public SequentialGroupMember samzaContainerGroupMember() {
-        String path = samzaContainerMembershipPath();
-        return new SequentialGroupMember(curator, path, EMPTY_PAYLOAD);
+        String membersBasePath = samzaContainerMembershipPath();
+        String locksBasePath = membersBasePath + "-locks";
+        return new SequentialGroupMember(curator, membersBasePath, locksBasePath, EMPTY_PAYLOAD);
     }
 
     @Bean

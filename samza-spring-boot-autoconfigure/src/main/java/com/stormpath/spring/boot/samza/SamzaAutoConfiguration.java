@@ -47,17 +47,20 @@ public class SamzaAutoConfiguration {
     @Autowired
     private ApplicationContext applicationContext;
 
-    @Autowired(required = false)
+    /*@Autowired
     private CheckpointManagerFactory checkpointManagerFactory;
 
-    @Autowired(required = false)
-    private CheckpointManager checkpointManager;
+    @Autowired
+    private CheckpointManager checkpointManager; */
 
     @Value("#{ @environment['samza.container.count'] ?: 1 }")
     private int samzaContainerCount; //only used for static configuration of the number of job instances
 
     @Value("#{ @environment['samza.container.id'] ?: 0 }")
     private int samzaContainerId;
+
+    @Value("#{ @environment['samza.job.name'] ?: (@environment['spring.application.name'] ?: '') }")
+    private String samzaJobName;
 
     public static CheckpointManagerFactory getConfigTimeCheckpointManagerFactory() {
         return configTimeCheckpointManagerFactory.get();
@@ -81,9 +84,21 @@ public class SamzaAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
+    public CheckpointManager samzaCheckpointManager() {
+        return new DisabledCheckpointManager();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     public Config samzaConfig() {
 
-        Map<String, String> props = samzaConfigurationProperties();
+        CheckpointManagerFactory factory = null;
+
+        CheckpointManager manager = samzaCheckpointManager();
+
+        //don't overwrite the original values:
+        Map<String, String> props = new HashMap<>();
+        props.putAll(samzaConfigurationProperties());
 
         String key = JobConfig$.MODULE$.STREAM_JOB_FACTORY_CLASS();
         String value = props.get(key);
@@ -93,16 +108,8 @@ public class SamzaAutoConfiguration {
             throw new BeanInitializationException(msg);
         }
 
-        //if job.name is not set, auto-set to spring.application.name value if possible:
-        key = JobConfig$.MODULE$.JOB_NAME();
-        if (!props.containsKey(key)) {
-            String val = configurableEnvironment.getProperty("spring.application.name");
-            if (StringUtils.hasText(val)) {
-                props.put(key, val);
-            }
-        }
-        Assert.isTrue(props.containsKey(key), "The samza." + key +
-            " property must be specified if spring.application.name is not set.");
+        Assert.hasText(samzaJobName, "samza.job.name or spring.application.name must be defined.");
+        props.put(JobConfig$.MODULE$.JOB_NAME(), samzaJobName);
 
         key = TaskConfig$.MODULE$.TASK_CLASS();
         value = props.get(key);
@@ -118,10 +125,8 @@ public class SamzaAutoConfiguration {
         key = TaskConfig$.MODULE$.CHECKPOINT_MANAGER_FACTORY();
         if (!props.containsKey(key)) {
 
-            CheckpointManagerFactory factory = checkpointManagerFactory;
-
-            if (factory == null && checkpointManager != null) {
-                factory = new FixedCheckpointManagerFactory(checkpointManager);
+            if (/*factory == null &&*/ manager != null && (!(manager instanceof DisabledCheckpointManager))) {
+                factory = new FixedCheckpointManagerFactory(manager);
             }
 
             if (factory != null) {
@@ -145,22 +150,12 @@ public class SamzaAutoConfiguration {
     @ConditionalOnMissingBean(name = "samzaContainerId")
     public int samzaContainerId() {
         Assert.isTrue(samzaContainerId >= 0, "samza.container.id must be a non-negative integer (0 or greater)");
-        return samzaContainerId; //TODO enable Zookeeper supplier to avoid YARN messiness
-    }
-
-    @Bean
-    @ConditionalOnMissingBean(name = "samzaJobName")
-    public String samzaJobName() {
-        Config config = samzaConfig();
-        String value = config.get(JobConfig$.MODULE$.JOB_NAME());
-        Assert.notNull("Samza Config object does not contain a job.name value.  This should have been auto resolved.");
-        return value;
+        return samzaContainerId; //will be overwritten if zookeeper is enabled
     }
 
     @Bean
     @ConditionalOnMissingBean
     public JobModel samzaJobModel() {
-
         Config samzaConfig = samzaConfig();
 
         int count = samzaContainerCount();

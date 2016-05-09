@@ -1,36 +1,55 @@
 package com.stormpath.curator.framework.recipes.nodes;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
 import org.apache.curator.framework.CuratorFramework;
-import org.apache.curator.framework.recipes.cache.ChildData;
-import org.apache.curator.framework.recipes.cache.PathChildrenCache;
+import org.apache.curator.framework.recipes.locks.InterProcessMutex;
 import org.apache.curator.framework.recipes.nodes.PersistentNode;
 import org.apache.curator.utils.CloseableUtils;
 import org.apache.curator.utils.ThreadUtils;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.data.Stat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 import java.io.Closeable;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class SequentialGroupMember implements Closeable {
 
-    private final PersistentNode pen;
-    private final PathChildrenCache cache;
+    private static final Logger log = LoggerFactory.getLogger(SequentialGroupMember.class);
 
+    private final CuratorFramework client;
+    private final int startingId;
+    private final String membersBasePath;
+    private final String locksBasePath;
+    private final byte[] payload;
+
+    private PersistentNode pen;
     private int id = -1;
 
     /**
-     * @param client         client
-     * @param membershipPath the path to use for membership
-     * @param payload        the payload to write in our member node
+     * @param client          client
+     * @param membersBasePath the path to use for membership
+     * @param payload         the payload to write in our member node
      */
-    public SequentialGroupMember(CuratorFramework client, String membershipPath, byte[] payload) {
-        cache = newPathChildrenCache(client, membershipPath);
-        pen = new PersistentNode(client, CreateMode.EPHEMERAL_SEQUENTIAL, true, membershipPath, payload);
+    public SequentialGroupMember(CuratorFramework client, String membersBasePath, String locksBasePath, byte[] payload) {
+        this(client, membersBasePath, locksBasePath, 0, payload);
+    }
+
+    /**
+     * @param client          client
+     * @param membersBasePath the path to use for membership
+     * @param payload         the payload to write in our member node
+     */
+    public SequentialGroupMember(CuratorFramework client, String membersBasePath, String locksBasePath, int startingId, byte[] payload) {
+        Assert.isTrue(startingId >= 0, "startingId must be greater than or equal to zero.");
+        this.startingId = startingId;
+        this.membersBasePath = membersBasePath;
+        this.locksBasePath = locksBasePath;
+        this.client = client;
+        this.payload = payload;
     }
 
     public int getId() {
@@ -43,14 +62,59 @@ public class SequentialGroupMember implements Closeable {
      * caching all members
      */
     public void start() {
-        pen.start();
         try {
-            pen.waitForInitialCreate(30000, TimeUnit.SECONDS);
-            this.id = idFromPath(pen.getActualPath());
-            cache.start();
+            doStart();
         } catch (Exception e) {
             ThreadUtils.checkInterrupted(e);
             Throwables.propagate(e);
+        }
+    }
+
+    protected void doStart() throws Exception {
+
+        int i = startingId;
+
+        while (this.id == -1) {
+
+            String lockPath = ZKPaths.makePath(locksBasePath, String.valueOf(i));
+            String memberPath = ZKPaths.makePath(membersBasePath, String.valueOf(i));
+
+            log.trace("Acquiring mutex for member {} via lock path {}", i, lockPath);
+
+            InterProcessMutex mutex = new InterProcessMutex(this.client, lockPath);
+            mutex.acquire();
+
+            log.debug("Acquired mutex for member {} via lock path {}", i, lockPath);
+
+            try {
+
+                Stat stat = client.checkExists().creatingParentContainersIfNeeded().forPath(memberPath);
+
+                if (stat == null) {
+
+                    log.debug("Claiming container id {} via member path {}", i, memberPath);
+
+                    try {
+                        //no peer has this node yet, grab it:
+                        pen = new PersistentNode(client, CreateMode.EPHEMERAL, false, memberPath, payload);
+                        pen.start();
+                        pen.waitForInitialCreate(30000, TimeUnit.SECONDS);
+                        this.id = i;
+                        log.info("Claimed container id {} via member path {}", i, memberPath);
+                        return;
+                    } catch (InterruptedException e) {
+                        CloseableUtils.closeQuietly(pen);
+                        ThreadUtils.checkInterrupted(e);
+                        Throwables.propagate(e);
+                    }
+                }
+
+            } finally {
+                mutex.release();
+                log.debug("Released mutex for member {} via lock path {}", i, lockPath);
+            }
+
+            i++;
         }
     }
 
@@ -73,43 +137,6 @@ public class SequentialGroupMember implements Closeable {
      */
     @Override
     public void close() {
-        CloseableUtils.closeQuietly(cache);
         CloseableUtils.closeQuietly(pen);
-    }
-
-    /**
-     * Return the current view of membership. The keys are the IDs
-     * of the members. The values are each member's payload
-     *
-     * @return membership
-     */
-    public Map<Integer, byte[]> getCurrentMembers() {
-        ImmutableMap.Builder<Integer, byte[]> builder = ImmutableMap.builder();
-        boolean thisIdAdded = false;
-        for (ChildData data : cache.getCurrentData()) {
-            String path = data.getPath();
-            int pathId = idFromPath(path);
-            thisIdAdded = thisIdAdded || pathId == this.id;
-            builder.put(pathId, data.getData());
-        }
-        if (!thisIdAdded) {
-            builder.put(this.id, pen.getData());   // this instance is always a member
-        }
-        return builder.build();
-    }
-
-    /**
-     * Given a full ZNode path, return the member ID
-     *
-     * @param path full ZNode path
-     * @return id
-     */
-    public int idFromPath(String path) {
-        String idVal = ZKPaths.getNodeFromPath(path);
-        return Integer.parseInt(idVal);
-    }
-
-    protected PathChildrenCache newPathChildrenCache(CuratorFramework client, String membershipPath) {
-        return new PathChildrenCache(client, membershipPath, true);
     }
 }
