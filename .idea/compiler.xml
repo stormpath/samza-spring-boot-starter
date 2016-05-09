@@ -43,13 +43,61 @@
         <processorPath useClasspath="true" />
         <module name="samza-spring-boot-starter" />
       </profile>
+      <profile default="false" name="Annotation profile for samza-spring-boot-curator" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="samza-spring-boot-curator" />
+      </profile>
+      <profile default="false" name="Annotation profile for curator-spring-boot-core" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="curator-spring-boot-core" />
+      </profile>
+      <profile default="false" name="Annotation profile for samza-curator-spring-boot-core" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="samza-curator-spring-boot-core" />
+      </profile>
+      <profile default="false" name="Annotation profile for additional-curator-recipes" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="additional-curator-recipes" />
+      </profile>
+      <profile default="false" name="Annotation profile for samza-zookeeper-spring-boot-autoconfigure" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="samza-zookeeper-spring-boot-autoconfigure" />
+      </profile>
+      <profile default="false" name="Annotation profile for samza-zookeeper" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="samza-zookeeper" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="additional-curator-recipes" target="1.8" />
+      <module name="curator-spring-boot-core" target="1.8" />
+      <module name="samza-curator-spring-boot-core" target="1.8" />
       <module name="samza-spring-boot-autoconfigure" target="1.8" />
       <module name="samza-spring-boot-config" target="1.8" />
       <module name="samza-spring-boot-core" target="1.8" />
+      <module name="samza-spring-boot-curator" target="1.8" />
       <module name="samza-spring-boot-starter" target="1.8" />
       <module name="samza-spring-boot-starter-parent" target="1.8" />
+      <module name="samza-zookeeper" target="1.8" />
+      <module name="samza-zookeeper-spring-boot-autoconfigure" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

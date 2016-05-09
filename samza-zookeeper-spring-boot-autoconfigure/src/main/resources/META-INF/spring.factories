@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.stormpath.spring.boot.samza.curator.CuratorSamzaAutoConfiguration,\
+com.stormpath.spring.boot.samza.curator.checkpoint.ZookeeperCheckpointAutoConfiguration

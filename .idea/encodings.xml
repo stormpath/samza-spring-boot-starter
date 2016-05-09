@@ -2,10 +2,13 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/additional-curator-recipes" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/autoconfigure" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/config" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/core" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/starter" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/samza-spring-boot-autoconfigure" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/samza-spring-boot-starter" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/samza-zookeeper" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure" charset="UTF-8" />
     <file url="PROJECT" charset="UTF-8" />
   </component>
 </project>
