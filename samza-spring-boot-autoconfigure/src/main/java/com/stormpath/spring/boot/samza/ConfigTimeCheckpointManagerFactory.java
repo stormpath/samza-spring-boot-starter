@@ -8,14 +8,15 @@ import org.springframework.util.Assert;
 
 public class ConfigTimeCheckpointManagerFactory implements CheckpointManagerFactory {
 
-    private CheckpointManagerFactory delegate;
+    private static CheckpointManagerFactory delegate;
 
     protected CheckpointManagerFactory getDelegate() {
-        if (this.delegate == null) {
-            this.delegate = SamzaAutoConfiguration.getConfigTimeCheckpointManagerFactory();
-        }
-        Assert.notNull(this.delegate, "Delegate CheckpointManagerFactory cannot be null.");
+        Assert.notNull(delegate, "Static delegate CheckpointManagerFactory cannot be null.");
         return delegate;
+    }
+
+    public static void setCheckpointManagerFactory(CheckpointManagerFactory factory) {
+        ConfigTimeCheckpointManagerFactory.delegate = factory;
     }
 
     @Override

@@ -9,6 +9,7 @@ import org.apache.samza.config.TaskConfig$;
 import org.apache.samza.container.SamzaContainer;
 import org.apache.samza.container.SamzaContainer$;
 import org.apache.samza.coordinator.JobCoordinator$;
+import org.apache.samza.job.StreamJob;
 import org.apache.samza.job.model.ContainerModel;
 import org.apache.samza.job.model.JobModel;
 import org.springframework.beans.factory.BeanInitializationException;
@@ -38,20 +39,11 @@ public class SamzaAutoConfiguration {
 
     protected static final String SAMZA_PROPERTY_PREFIX = "samza.";
 
-    private static final ThreadLocal<CheckpointManagerFactory> configTimeCheckpointManagerFactory = new ThreadLocal<>();
-    private static final ThreadLocal<ApplicationContext> configTimeApplicationContext = new ThreadLocal<>();
-
     @Autowired
     private ConfigurableEnvironment configurableEnvironment;
 
     @Autowired
     private ApplicationContext applicationContext;
-
-    /*@Autowired
-    private CheckpointManagerFactory checkpointManagerFactory;
-
-    @Autowired
-    private CheckpointManager checkpointManager; */
 
     @Value("#{ @environment['samza.container.count'] ?: 1 }")
     private int samzaContainerCount; //only used for static configuration of the number of job instances
@@ -62,13 +54,17 @@ public class SamzaAutoConfiguration {
     @Value("#{ @environment['samza.job.name'] ?: (@environment['spring.application.name'] ?: '') }")
     private String samzaJobName;
 
-    public static CheckpointManagerFactory getConfigTimeCheckpointManagerFactory() {
-        return configTimeCheckpointManagerFactory.get();
-    }
+    @Value("#{ @environment['samza.job.thread.name'] ?: null }")
+    private String samzaJobThreadName;
 
-    public static ApplicationContext getConfigTimeApplicationContext() {
-        return configTimeApplicationContext.get();
-    }
+    @Value("#{ @environment['samza.job.phase'] ?: 0 }")
+    private int samzaJobPhase = 0;
+
+    @Value("#{ @environment['samza.job.startWaitMillis'] ?: 2000 }")
+    private long samzaJobStartWaitMillis = 2000;
+
+    @Value("#{ @environment['samza.job.stopWaitMillis'] ?: 1000 }")
+    private long samzaJobStopWaitMillis = 1000;
 
     @Bean
     public Map<String, String> samzaConfigurationProperties() {
@@ -118,7 +114,7 @@ public class SamzaAutoConfiguration {
                 "Define a prototype-scoped StreamTask bean instead.  It MUST be prototype-scoped.";
             throw new BeanInitializationException(msg);
         }
-        configTimeApplicationContext.set(applicationContext); //needed by this next value:
+        ConfigTimeStreamTask.setApplicationContext(applicationContext);
         props.put(key, ConfigTimeStreamTask.class.getCanonicalName());
 
         //Ensure Spring-configured CheckpointManagerFactory or CheckpointManager is used:
@@ -130,7 +126,7 @@ public class SamzaAutoConfiguration {
             }
 
             if (factory != null) {
-                configTimeCheckpointManagerFactory.set(factory);
+                ConfigTimeCheckpointManagerFactory.setCheckpointManagerFactory(factory);
                 String className = ConfigTimeCheckpointManagerFactory.class.getCanonicalName();
                 props.put(key, className);
             }
@@ -183,6 +179,25 @@ public class SamzaAutoConfiguration {
         }
 
         return SamzaContainer$.MODULE$.apply(containerModel, jobModel);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    public StreamJob samzaJob() {
+
+        SamzaContainer container = samzaContainer();
+
+        SpringThreadJob job = new SpringThreadJob(container);
+
+        if (samzaJobThreadName != null) {
+            job.setThreadName(samzaJobThreadName);
+        }
+
+        job.setPhase(samzaJobPhase);
+        job.setStartWaitMillis(samzaJobStartWaitMillis);
+        job.setStopWaitMillis(samzaJobStopWaitMillis);
+
+        return job;
     }
 
     protected static Set<String> findPropertyNamesStartingWith(ConfigurableEnvironment env, String prefix) {

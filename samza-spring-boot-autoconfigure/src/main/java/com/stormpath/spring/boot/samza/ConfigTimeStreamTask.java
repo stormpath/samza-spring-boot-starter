@@ -6,16 +6,19 @@ import org.apache.samza.task.*;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 
 public class ConfigTimeStreamTask implements StreamTask, InitableTask, WindowableTask, ClosableTask {
+
+    private static ApplicationContext APPCTX;
 
     private StreamTask _delegate;
 
     private StreamTask getDelegate() {
         if (_delegate == null) {
             try {
-                ApplicationContext appCtx = SamzaAutoConfiguration.getConfigTimeApplicationContext();
-                _delegate = appCtx.getBean(StreamTask.class);
+                Assert.notNull(APPCTX, "static ApplicationContext cannot be null.");
+                _delegate = APPCTX.getBean(StreamTask.class);
             } catch (BeansException e) {
                 String msg = "Unable to acquire Samza StreamTask bean.  If you enable the " +
                     "Samza Spring Boot Plugin you must declare a prototype bean that implements the " +
@@ -24,6 +27,10 @@ public class ConfigTimeStreamTask implements StreamTask, InitableTask, Windowabl
             }
         }
         return _delegate;
+    }
+
+    public static void setApplicationContext(ApplicationContext appCtx) {
+        ConfigTimeStreamTask.APPCTX = appCtx;
     }
 
     @Override

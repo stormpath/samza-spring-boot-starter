@@ -2,12 +2,15 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/additional-curator-recipes/additional-curator-recipes.iml" filepath="$PROJECT_DIR$/additional-curator-recipes/additional-curator-recipes.iml" />
       <module fileurl="file://$PROJECT_DIR$/additional-curator-recipes/curator.iml" filepath="$PROJECT_DIR$/additional-curator-recipes/curator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" filepath="$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-autoconfigure.iml" filepath="$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-autoconfigure.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-core.iml" filepath="$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-starter/samza-spring-boot-starter.iml" filepath="$PROJECT_DIR$/samza-spring-boot-starter/samza-spring-boot-starter.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-starter-parent.iml" filepath="$PROJECT_DIR$/samza-spring-boot-starter-parent.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-zookeeper/samza-zookeeper.iml" filepath="$PROJECT_DIR$/samza-zookeeper/samza-zookeeper.iml" />
-      <module fileurl="file://$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" filepath="$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-zookeeper-spring-boot-autoconfigure.iml" filepath="$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-zookeeper-spring-boot-autoconfigure.iml" />
     </modules>
   </component>
 </project>
