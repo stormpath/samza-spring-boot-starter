@@ -2,7 +2,6 @@ package com.stormpath.spring.boot.samza;
 
 import org.apache.samza.container.RunLoop;
 import org.apache.samza.container.SamzaContainer;
-import org.apache.samza.container.SamzaContainer$;
 import org.apache.samza.job.ApplicationStatus;
 import org.apache.samza.job.StreamJob;
 import org.slf4j.Logger;
@@ -13,7 +12,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.util.Assert;
-import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
