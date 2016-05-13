@@ -1,5 +1,6 @@
 package com.stormpath.spring.boot.samza;
 
+import com.stormpath.spring.context.StaticApplicationContextProvider;
 import org.apache.samza.checkpoint.CheckpointManager;
 import org.apache.samza.checkpoint.CheckpointManagerFactory;
 import org.apache.samza.config.Config;
@@ -87,6 +88,9 @@ public class SamzaAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
     public Config samzaConfig() {
+
+        //useful for various Samza factory implementations until they are 100% spring configurable:
+        StaticApplicationContextProvider.setApplicationContext(applicationContext);
 
         CheckpointManagerFactory factory = null;
 
