@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/additional-curator-recipes/curator.iml" filepath="$PROJECT_DIR$/additional-curator-recipes/curator.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-api/samza-api.iml" filepath="$PROJECT_DIR$/samza-api/samza-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" filepath="$PROJECT_DIR$/samza-zookeeper-spring-boot-autoconfigure/samza-curator-spring-boot-core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/samza-kv/samza-kv.iml" filepath="$PROJECT_DIR$/samza-kv/samza-kv.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-autoconfigure.iml" filepath="$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-autoconfigure.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-core.iml" filepath="$PROJECT_DIR$/samza-spring-boot-autoconfigure/samza-spring-boot-core.iml" />
       <module fileurl="file://$PROJECT_DIR$/samza-spring-boot-starter/samza-spring-boot-starter.iml" filepath="$PROJECT_DIR$/samza-spring-boot-starter/samza-spring-boot-starter.iml" />

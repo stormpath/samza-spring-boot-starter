@@ -67,7 +67,6 @@
     <modules>
         <module>additional-curator-recipes</module>
         <module>samza-api</module>
-        <module>samza-kv</module>
         <module>samza-spring-boot-autoconfigure</module>
         <module>samza-zookeeper</module>
         <module>samza-zookeeper-spring-boot-autoconfigure</module>
