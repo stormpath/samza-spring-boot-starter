@@ -85,11 +85,26 @@
         <processorPath useClasspath="true" />
         <module name="samza-zookeeper" />
       </profile>
+      <profile default="false" name="Annotation profile for samza-kv" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+      </profile>
+      <profile default="false" name="Annotation profile for samza-api" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="true" />
+        <module name="samza-api" />
+      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="additional-curator-recipes" target="1.8" />
       <module name="curator-spring-boot-core" target="1.8" />
+      <module name="samza-api" target="1.8" />
       <module name="samza-curator-spring-boot-core" target="1.8" />
+      <module name="samza-kv" target="1.8" />
       <module name="samza-spring-boot-autoconfigure" target="1.8" />
       <module name="samza-spring-boot-config" target="1.8" />
       <module name="samza-spring-boot-core" target="1.8" />
